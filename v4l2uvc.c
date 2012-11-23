@@ -295,11 +295,19 @@ int uvcGrab (struct vdIn *vd)
         memcpy (p_buff, vd->mem[vd->buf.index], HEADERFRAME1);
         p_buff += HEADERFRAME1;
         if (vd->bForceDHT == 1) {
-            if ((vd->buf.bytesused - HEADERFRAME1 >= DHT_SIZE) &&
-                    memcmp((void*)(p_buff), (void*)dht_data, DHT_SIZE) != 0) {
-                fprintf (stderr, "No DHT data in frame found\n");
+            int offset;
+            for (offset = 0; offset < vd->buf.bytesused; offset++) {
+                unsigned char *marker = vd->mem[vd->buf.index] + offset;
+                if (!memcmp((void*)marker, (void*)dht_data, 2)) {
+                    fprintf (stderr, "DHT marker located by offset %d\n", offset);
+                    offset = -1;
+                    break;
+                }
+            }
+
+            if ((vd->buf.bytesused - HEADERFRAME1 >= DHT_SIZE) && offset != -1) {
+                fprintf (stderr, "No DHT data in frame found");
                 memcpy (p_buff, dht_data, DHT_SIZE);
-                vd->bForceDHT = 0;
                 vd->bAddDHT_size = 1;
             } else {
                 vd->bAddDHT_size = 0;
