@@ -21,6 +21,14 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    #
 #                                                                              #
 *******************************************************************************/
+#include <linux/videodev.h>
+
+#ifndef V4L2UVC_H
+#define V4L2UVC_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define NB_BUFFER 16
 #define DHT_SIZE 420
@@ -47,6 +55,7 @@ struct vdIn {
     struct v4l2_requestbuffers rb;
     void *mem[NB_BUFFER];
     unsigned char *tmpbuffer;
+    int tmpbuffer_size;
     unsigned char *framebuffer;
     int isstreaming;
     int grabmethod;
@@ -58,6 +67,8 @@ struct vdIn {
     int signalquit;
     int toggleAvi;
     int getPict;
+    int bForceDHT;
+    int bAddDHT_size;
 
 };
 
@@ -75,3 +86,9 @@ int v4l2ResetControl (struct vdIn *vd, int control);
 int v4l2ResetPanTilt (struct vdIn *vd, int pantilt);
 int v4L2UpDownPan (struct vdIn *vd, short inc);
 int v4L2UpDownTilt (struct vdIn *vd, short inc);
+
+#ifdef __cplusplus
+} /* closing brace for extern "C" */
+#endif
+
+#endif // V4L2UVC_H

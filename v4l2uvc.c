@@ -99,6 +99,7 @@ int init_videoIn (struct vdIn *vd, char *device, int width, int height,
     vd->height = height;
     vd->formatIn = format;
     vd->grabmethod = grabmethod;
+    vd->bForceDHT = 1;
     if (init_v4l2 (vd) < 0) {
         fprintf (stderr, " Init v4L2 failed !! exit fatal \n");
         goto error;;
@@ -274,11 +275,12 @@ int uvcGrab (struct vdIn *vd)
 {
 #define HEADERFRAME1 0xaf
     int ret;
+    unsigned char *p_buff;
 
     if (!vd->isstreaming)
         if (video_enable (vd))
             goto err;
-    memset (&vd->buf, 0, sizeof (struct v4l2_buffer));
+    //memset (&vd->buf, 0, sizeof (struct v4l2_buffer));
     vd->buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     vd->buf.memory = V4L2_MEMORY_MMAP;
     ret = ioctl (vd->fd, VIDIOC_DQBUF, &vd->buf);
@@ -288,11 +290,27 @@ int uvcGrab (struct vdIn *vd)
     }
     switch (vd->formatIn) {
     case V4L2_PIX_FMT_MJPEG:
-
-        memcpy (vd->tmpbuffer, vd->mem[vd->buf.index], HEADERFRAME1);
-        memcpy (vd->tmpbuffer + HEADERFRAME1, dht_data, DHT_SIZE);
-        memcpy (vd->tmpbuffer + HEADERFRAME1 + DHT_SIZE,
-                vd->mem[vd->buf.index] + HEADERFRAME1,
+        p_buff = vd->tmpbuffer;
+        vd->tmpbuffer_size = vd->buf.bytesused;
+        memcpy (p_buff, vd->mem[vd->buf.index], HEADERFRAME1);
+        p_buff += HEADERFRAME1;
+        if (vd->bForceDHT == 1) {
+            if ((vd->buf.bytesused - HEADERFRAME1 >= DHT_SIZE) &&
+                    memcmp((void*)(p_buff), (void*)dht_data, DHT_SIZE) != 0) {
+                fprintf (stderr, "No DHT data in frame found\n");
+                memcpy (p_buff, dht_data, DHT_SIZE);
+                vd->bForceDHT = 0;
+                vd->bAddDHT_size = 1;
+            } else {
+                vd->bAddDHT_size = 0;
+            }
+            vd->bForceDHT = 0;
+        }
+        if (vd->bAddDHT_size) {
+                p_buff += DHT_SIZE;
+                vd->tmpbuffer_size += DHT_SIZE;
+        }
+        memcpy (p_buff, vd->mem[vd->buf.index] + HEADERFRAME1,
                 (vd->buf.bytesused - HEADERFRAME1));
         if (debug)
             fprintf (stderr, "bytes in used %d \n", vd->buf.bytesused);
