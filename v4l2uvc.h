@@ -33,16 +33,33 @@ extern "C" {
 #define NB_BUFFER 16
 #define DHT_SIZE 420
 
+#ifndef V4L2_CID_BACKLIGHT_COMPENSATION
 #define V4L2_CID_BACKLIGHT_COMPENSATION	(V4L2_CID_PRIVATE_BASE+0)
+#endif
+#ifndef V4L2_CID_POWER_LINE_FREQUENCY
 #define V4L2_CID_POWER_LINE_FREQUENCY	(V4L2_CID_PRIVATE_BASE+1)
+#endif
+#ifndef V4L2_CID_SHARPNESS
 #define V4L2_CID_SHARPNESS		(V4L2_CID_PRIVATE_BASE+2)
+#endif
+#ifndef V4L2_CID_HUE_AUTO
 #define V4L2_CID_HUE_AUTO		(V4L2_CID_PRIVATE_BASE+3)
+#endif
+#ifndef V4L2_CID_FOCUS_AUTO
 #define V4L2_CID_FOCUS_AUTO		(V4L2_CID_PRIVATE_BASE+4)
+#endif
+#ifndef V4L2_CID_FOCUS_ABSOLUTE
 #define V4L2_CID_FOCUS_ABSOLUTE		(V4L2_CID_PRIVATE_BASE+5)
+#endif
+#ifndef V4L2_CID_FOCUS_RELATIVE
 #define V4L2_CID_FOCUS_RELATIVE		(V4L2_CID_PRIVATE_BASE+6)
-
+#endif
+#ifndef V4L2_CID_PANTILT_RELATIVE
 #define V4L2_CID_PANTILT_RELATIVE	(V4L2_CID_PRIVATE_BASE+7)
+#endif
+#ifndef V4L2_CID_PANTILT_RESET
 #define V4L2_CID_PANTILT_RESET		(V4L2_CID_PRIVATE_BASE+8)
+#endif
 
 struct vdIn {
     int fd;
@@ -59,11 +76,11 @@ struct vdIn {
     unsigned char *framebuffer;
     int isstreaming;
     int grabmethod;
-    int width;
-    int height;
+    unsigned int width;
+    unsigned int height;
     int formatIn;
     int formatOut;
-    int framesizeIn;
+    unsigned int framesizeIn;
     int signalquit;
     int toggleAvi;
     int getPict;

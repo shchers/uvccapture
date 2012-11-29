@@ -295,17 +295,18 @@ int uvcGrab (struct vdIn *vd)
         memcpy (p_buff, vd->mem[vd->buf.index], HEADERFRAME1);
         p_buff += HEADERFRAME1;
         if (vd->bForceDHT == 1) {
-            int offset;
+            unsigned int offset;
             for (offset = 0; offset < vd->buf.bytesused; offset++) {
-                unsigned char *marker = vd->mem[vd->buf.index] + offset;
+                unsigned char *marker = (unsigned char *)vd->mem[vd->buf.index] + offset;
                 if (!memcmp((void*)marker, (void*)dht_data, 2)) {
                     fprintf (stderr, "DHT marker located by offset %d\n", offset);
-                    offset = -1;
+                    offset = (unsigned int)-1;
                     break;
                 }
             }
 
-            if ((vd->buf.bytesused - HEADERFRAME1 >= DHT_SIZE) && offset != -1) {
+            if ((vd->buf.bytesused - HEADERFRAME1 >= DHT_SIZE) &&
+                    offset != (unsigned int)-1) {
                 fprintf (stderr, "No DHT data in frame found");
                 memcpy (p_buff, dht_data, DHT_SIZE);
                 vd->bAddDHT_size = 1;
@@ -318,7 +319,7 @@ int uvcGrab (struct vdIn *vd)
                 p_buff += DHT_SIZE;
                 vd->tmpbuffer_size += DHT_SIZE;
         }
-        memcpy (p_buff, vd->mem[vd->buf.index] + HEADERFRAME1,
+        memcpy (p_buff, (unsigned char *)vd->mem[vd->buf.index] + HEADERFRAME1,
                 (vd->buf.bytesused - HEADERFRAME1));
         if (debug)
             fprintf (stderr, "bytes in used %d \n", vd->buf.bytesused);
